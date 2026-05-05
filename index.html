@@ -1,423 +1,111 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eat.Ai - Neural Text-to-Speech</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #000000;
-            color: #ffffff;
-            overflow-x: hidden;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eat.AI - Hindi Voice Generator</title>
 
-        .glass-card {
-            background: rgba(28, 28, 30, 0.7);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .premium-shadow {
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        .orange-gradient {
-            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-        }
-
-        input[type="range"] {
-            -webkit-appearance: none;
-            width: 100%;
-            background: #2C2C2E;
-            height: 4px;
-            border-radius: 2px;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 16px;
-            width: 16px;
-            border-radius: 50%;
-            background: #f97316;
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
-        }
-
-        .waveform-container {
-            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.05); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 0.5; }
-        }
-
-        .generating-pulse {
-            animation: pulse 2s infinite ease-in-out;
-        }
-    </style>
+<style>
+body {
+  background: #0d0d0d;
+  color: white;
+  font-family: Arial;
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+.container {
+  width: 600px;
+}
+textarea {
+  width: 100%;
+  height: 120px;
+  padding: 10px;
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+}
+select, input {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+}
+button {
+  margin-top: 15px;
+  padding: 12px;
+  width: 100%;
+  background: orange;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+audio {
+  margin-top: 15px;
+  width: 100%;
+}
+</style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4">
-    <!-- Background Decor -->
-    <div class="fixed top-0 left-0 w-full h-full pointer-events-none z-0">
-        <div class="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-500/10 blur-[120px] rounded-full"></div>
-        <div class="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-orange-500/5 blur-[120px] rounded-full"></div>
-    </div>
 
-    <div class="max-w-4xl w-full z-10 space-y-8">
-        <!-- Brand -->
-        <div class="flex flex-col items-center space-y-2 mb-8">
-            <div class="w-16 h-16 bg-white flex items-center justify-center rounded-[1.25rem] shadow-2xl mb-4">
-                <i data-lucide="mic-2" class="text-black" size="32"></i>
-            </div>
-            <h1 class="text-5xl font-black tracking-tighter">
-                Eat<span class="text-orange-500">.Ai</span>
-            </h1>
-            <p class="text-[#86868B] font-medium uppercase tracking-[0.3em] text-[10px]">Neural Synthesis Studio</p>
-        </div>
+<body>
 
-        <div class="glass-card rounded-[2.5rem] p-8 md:p-12 premium-shadow">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                
-                <!-- Left: Controls -->
-                <div class="lg:col-span-5 space-y-8">
-                    <div class="space-y-4">
-                        <label class="text-[10px] font-black uppercase tracking-widest text-[#86868B]">Voice Selection</label>
-                        <div class="relative">
-                            <select id="voice-select" class="w-full bg-[#2C2C2E] border border-white/10 rounded-2xl p-4 appearance-none font-bold text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-500/50">
-                                <option value="Kore">Kore (Balanced)</option>
-                                <option value="Puck">Puck (Energetic)</option>
-                                <option value="Charon">Charon (Deep)</option>
-                                <option value="Fenrir">Fenrir (Professional)</option>
-                                <option value="Zephyr">Zephyr (Bright)</option>
-                                <option value="Aoede">Aoede (Soft)</option>
-                                <option value="Helios">Helios (Warm)</option>
-                                <option value="Icarus">Icarus (Young)</option>
-                                <option value="Orpheus">Orpheus (Expressive)</option>
-                                <option value="Artemis">Artemis (Calm)</option>
-                                <option value="Athena">Athena (Authoritative)</option>
-                                <option value="Hera">Hera (Gentle)</option>
-                            </select>
-                            <i data-lucide="chevron-down" class="absolute right-4 top-1/2 -translate-y-1/2 text-[#86868B] pointer-events-none"></i>
-                        </div>
-                    </div>
+<div class="container">
+<h2>🎙️ Eat.AI Hindi Voice Generator</h2>
 
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center">
-                            <label class="text-[10px] font-black uppercase tracking-widest text-[#86868B]">Speed Control</label>
-                            <span id="speed-display" class="text-xs font-mono text-orange-500">1.0x</span>
-                        </div>
-                        <input type="range" id="speed-range" min="0.5" max="2.0" step="0.1" value="1.0">
-                    </div>
+<textarea id="text" placeholder="Hindi text likho..."></textarea>
 
-                    <div id="player-section" class="hidden space-y-6 pt-4 border-t border-white/5">
-                        <div class="flex items-center gap-4">
-                            <button id="play-button" class="w-14 h-14 bg-white rounded-full flex items-center justify-center text-black hover:scale-105 active:scale-95 transition-all">
-                                <i data-lucide="play" id="play-icon"></i>
-                            </button>
-                            <div class="flex-1">
-                                <p id="status-text" class="text-xs font-bold text-white mb-1">Preview Ready</p>
-                                <p class="text-[10px] text-[#86868B]">Hindi Neural Stream</p>
-                            </div>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-3">
-                            <button id="download-wav" class="h-12 bg-white/5 border border-white/10 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all">WAV</button>
-                            <button id="download-mp3" class="h-12 bg-white/5 border border-white/10 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all">MP3</button>
-                        </div>
-                    </div>
-                </div>
+<select id="voice"></select>
 
-                <!-- Right: Text Input & Visualizer -->
-                <div class="lg:col-span-7 flex flex-col space-y-6">
-                    <div class="flex-1 relative">
-                        <textarea id="text-input" placeholder="यहाँ अपना हिंदी टेक्स्ट लिखें..." class="w-full h-full min-h-[300px] bg-[#1C1C1E] border border-white/10 rounded-[2rem] p-8 text-xl font-medium leading-relaxed resize-none focus:outline-none focus:border-orange-500/50 placeholder:text-[#3A3A3C] transition-all"></textarea>
-                        <div class="absolute bottom-6 right-8 text-[10px] font-black text-[#3A3A3C] uppercase tracking-widest">Hindi Neural Core v3.1</div>
-                    </div>
+<label>Speed</label>
+<input type="range" min="0.5" max="2" step="0.1" value="1" id="speed">
 
-                    <div class="h-32 bg-[#1C1C1E] border border-white/5 rounded-[2rem] overflow-hidden relative group">
-                        <canvas id="visualizer" class="w-full h-full opacity-40 group-hover:opacity-80 transition-opacity"></canvas>
-                        <div id="no-audio-msg" class="absolute inset-0 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-[#3A3A3C]">Waiting for generation...</div>
-                    </div>
+<button onclick="speak()">Generate Voice</button>
 
-                    <button id="generate-btn" class="w-full h-20 orange-gradient rounded-[1.5rem] flex items-center justify-center gap-4 text-black font-black uppercase tracking-[0.2em] shadow-xl hover:shadow-orange-500/20 active:scale-[0.98] transition-all">
-                        <i data-lucide="zap" fill="currentColor"></i>
-                        <span>Generate Neural Voice</span>
-                    </button>
-                </div>
-            </div>
-        </div>
+<audio id="audio" controls></audio>
 
-        <!-- Footer -->
-        <div class="flex flex-col md:flex-row justify-between items-center gap-4 p-4">
-            <div class="flex gap-4">
-                <a href="#" class="text-[10px] font-bold text-[#86868B] hover:text-white uppercase tracking-widest">Privacy</a>
-                <a href="#" class="text-[10px] font-bold text-[#86868B] hover:text-white uppercase tracking-widest">Terms</a>
-            </div>
-            <p class="text-[10px] font-bold text-[#3A3A3C] uppercase tracking-widest">© 2026 EAT.AI Neural Labs</p>
-        </div>
-    </div>
+<button onclick="download()">Download</button>
+</div>
 
-    <!-- API Key Entry (Only shown if needed) -->
-    <div id="key-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-[100] hidden">
-        <div class="glass-card p-10 rounded-[2.5rem] max-w-md w-full mx-4 text-center space-y-6">
-            <i data-lucide="key" class="mx-auto text-orange-500" size="48"></i>
-            <h2 class="text-2xl font-black">API Key Required</h2>
-            <p class="text-[#86868B] text-sm leading-relaxed">Paste your Gemini API key to start generating neural voices. Your key resides locally in your browser.</p>
-            <input type="password" id="api-key-input" placeholder="Enter Gemini API Key..." class="w-full bg-[#2C2C2E] border border-white/10 rounded-2xl p-4 text-center focus:outline-none focus:ring-2 focus:ring-orange-500">
-            <button id="save-key-btn" class="w-full h-14 orange-gradient rounded-xl text-black font-black uppercase tracking-widest">Continue</button>
-        </div>
-    </div>
+<script>
+let voices = [];
 
-    <!-- Gemini SDK -->
-    <script type="importmap">
-      {
-        "imports": {
-          "@google/generative-ai": "https://esm.run/@google/generative-ai"
-        }
-      }
-    </script>
-    <script type="module">
-        import { GoogleGenerativeAI } from "@google/generative-ai";
+function loadVoices() {
+  voices = speechSynthesis.getVoices();
+  let select = document.getElementById("voice");
+  select.innerHTML = "";
 
-        // UI Elements
-        const textInput = document.getElementById('text-input');
-        const voiceSelect = document.getElementById('voice-select');
-        const speedRange = document.getElementById('speed-range');
-        const speedDisplay = document.getElementById('speed-display');
-        const generateBtn = document.getElementById('generate-btn');
-        const visualizer = document.getElementById('visualizer');
-        const playerSection = document.getElementById('player-section');
-        const playButton = document.getElementById('play-button');
-        const playIcon = document.getElementById('play-icon');
-        const statusText = document.getElementById('status-text');
-        const downloadWav = document.getElementById('download-wav');
-        const downloadMp3 = document.getElementById('download-mp3');
-        const keyModal = document.getElementById('key-modal');
-        const apiKeyInput = document.getElementById('api-key-input');
-        const saveKeyBtn = document.getElementById('save-key-btn');
-        const noAudioMsg = document.getElementById('no-audio-msg');
+  voices.forEach((v, i) => {
+    if (v.lang.includes("hi")) {
+      let option = document.createElement("option");
+      option.value = i;
+      option.text = v.name;
+      select.appendChild(option);
+    }
+  });
+}
 
-        // Audio State
-        let audioContext;
-        let audioBuffer;
-        let sourceNode;
-        let analyser;
-        let isPlaying = false;
-        let geminiApiKey = localStorage.getItem('GEMINI_API_KEY');
+speechSynthesis.onvoiceschanged = loadVoices;
 
-        // Lucide refresh
-        lucide.createIcons();
+function speak() {
+  let text = document.getElementById("text").value;
+  let speed = document.getElementById("speed").value;
+  let voiceIndex = document.getElementById("voice").value;
 
-        // Check for key
-        if (!geminiApiKey) {
-            keyModal.classList.remove('hidden');
-        }
+  let utter = new SpeechSynthesisUtterance(text);
+  utter.voice = voices[voiceIndex];
+  utter.rate = speed;
 
-        saveKeyBtn.onclick = () => {
-            const key = apiKeyInput.value.trim();
-            if (key) {
-                localStorage.setItem('GEMINI_API_KEY', key);
-                geminiApiKey = key;
-                keyModal.classList.add('hidden');
-            }
-        };
+  speechSynthesis.speak(utter);
+}
 
-        // Speed Display
-        speedRange.oninput = (e) => {
-            speedDisplay.innerText = `${e.target.value}x`;
-        };
+function download() {
+  alert("Browser limitation: direct MP3 download not supported.\nUse screen recorder or advanced API later.");
+}
+</script>
 
-        // Visualizer Setup
-        function initVisualizer() {
-            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            analyser = audioContext.createAnalyser();
-            analyser.fftSize = 256;
-            
-            const canvasCtx = visualizer.getContext('2d');
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-
-            function draw() {
-                requestAnimationFrame(draw);
-                analyser.getByteFrequencyData(dataArray);
-
-                canvasCtx.clearRect(0, 0, visualizer.width, visualizer.height);
-                const barWidth = (visualizer.width / bufferLength) * 2.5;
-                let barHeight;
-                let x = 0;
-
-                for(let i = 0; i < bufferLength; i++) {
-                    barHeight = dataArray[i] / 2;
-                    canvasCtx.fillStyle = isPlaying ? `rgba(249, 115, 22, ${dataArray[i]/255})` : '#3A3A3C';
-                    canvasCtx.fillRect(x, visualizer.height - barHeight, barWidth, barHeight);
-                    x += barWidth + 1;
-                }
-            }
-            draw();
-        }
-
-        // Generation
-        generateBtn.onclick = async () => {
-            const text = textInput.value.trim();
-            if (!text) return alert("Please enter some Hindi text.");
-            if (!geminiApiKey) return keyModal.classList.remove('hidden');
-
-            try {
-                generateBtn.disabled = true;
-                generateBtn.classList.add('opacity-50');
-                generateBtn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i><span>Synthesizing...</span>';
-                lucide.createIcons();
-
-                const genAI = new GoogleGenerativeAI(geminiApiKey);
-                // Note: Using the specific TTS modality preview
-                const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-tts-preview" });
-
-                const result = await model.generateContent({
-                    contents: [{ parts: [{ text: text }] }],
-                    generationConfig: {
-                        temperature: 1,
-                        topP: 0.95,
-                        topK: 40,
-                        candidateCount: 1,
-                    },
-                    config: {
-                        responseModalities: ["AUDIO"],
-                        speechConfig: {
-                            voiceConfig: {
-                                prebuiltVoiceConfig: {
-                                    voiceName: voiceSelect.value
-                                }
-                            }
-                        }
-                    }
-                });
-
-                const response = await result.response;
-                const base64Audio = response.candidates[0].content.parts[0].inlineData.data;
-                
-                // Process Audio
-                if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const binaryString = atob(base64Audio);
-                const len = binaryString.length;
-                const bytes = new Uint8Array(len);
-                for (let i = 0; i < len; i++) bytes[i] = binaryString.charCodeAt(i);
-                
-                audioBuffer = await audioContext.decodeAudioData(bytes.buffer);
-                
-                // Show Player
-                playerSection.classList.remove('hidden');
-                noAudioMsg.classList.add('hidden');
-                statusText.innerText = "Neural Stream Ready";
-                initVisualizer();
-
-            } catch (err) {
-                console.error(err);
-                alert("Error: " + err.message);
-            } finally {
-                generateBtn.disabled = false;
-                generateBtn.classList.remove('opacity-50');
-                generateBtn.innerHTML = '<i data-lucide="zap" fill="currentColor"></i><span>Generate Neural Voice</span>';
-                lucide.createIcons();
-            }
-        };
-
-        // Play / Pause
-        playButton.onclick = () => {
-            if (isPlaying) {
-                sourceNode.stop();
-                isPlaying = false;
-                playIcon.setAttribute('data-lucide', 'play');
-            } else {
-                if (!audioBuffer) return;
-                sourceNode = audioContext.createBufferSource();
-                sourceNode.buffer = audioBuffer;
-                sourceNode.playbackRate.value = parseFloat(speedRange.value);
-                sourceNode.connect(analyser);
-                analyser.connect(audioContext.destination);
-                sourceNode.start(0);
-                isPlaying = true;
-                playIcon.setAttribute('data-lucide', 'square');
-                
-                sourceNode.onended = () => {
-                    isPlaying = false;
-                    playIcon.setAttribute('data-lucide', 'play');
-                    lucide.createIcons();
-                };
-            }
-            lucide.createIcons();
-        };
-
-        // Download WAV Helper
-        function bufferToWav(abuffer) {
-            const numOfChan = abuffer.numberOfChannels,
-                length = abuffer.length * numOfChan * 2 + 44,
-                buffer = new ArrayBuffer(length),
-                view = new DataView(buffer),
-                channels = [], i, sample,
-                offset = 0,
-                pos = 0;
-
-            function setUint16(data) { view.setUint16(pos, data, true); pos += 2; }
-            function setUint32(data) { view.setUint32(pos, data, true); pos += 4; }
-
-            // write WAVE header
-            setUint32(0x46464952);                         // "RIFF"
-            setUint32(length - 8);                         // file length - 8
-            setUint32(0x45564157);                         // "WAVE"
-            setUint32(0x20746d66);                         // "fmt " chunk
-            setUint32(16);                                 // length = 16
-            setUint16(1);                                  // PCM (uncompressed)
-            setUint16(numOfChan);
-            setUint32(abuffer.sampleRate);
-            setUint32(abuffer.sampleRate * 2 * numOfChan); // avg. bytes/sec
-            setUint16(numOfChan * 2);                      // block-align
-            setUint16(16);                                 // 16-bit (hardcoded)
-            setUint32(0x61746164);                         // "data" - chunk
-            setUint32(length - pos - 4);                   // chunk length
-
-            // write interleaved data
-            for(i = 0; i < abuffer.numberOfChannels; i++)
-                channels.push(abuffer.getChannelData(i));
-
-            let p = pos;
-            while(offset < abuffer.length) {
-                for(i = 0; i < numOfChan; i++) {
-                    sample = Math.max(-1, Math.min(1, channels[i][offset]));
-                    sample = (sample < 0 ? sample * 0x8000 : sample * 0x7FFF);
-                    view.setInt16(p, sample, true);
-                    p += 2;
-                }
-                offset++;
-            }
-            return new Blob([buffer], {type: "audio/wav"});
-        }
-
-        downloadWav.onclick = () => {
-            if (!audioBuffer) return;
-            const blob = bufferToWav(audioBuffer);
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `eat_ai_voice_${Date.now()}.wav`;
-            a.click();
-        };
-
-        // Note: Real MP3 conversion in browser requires heavy libs like lamejs. 
-        // For standalone single file, we offer WAV as primary, and alias MP3 to show structure.
-        downloadMp3.onclick = () => {
-            alert("High-fidelity MP3 encoding is currently routing via WAV for standalone compatibility.");
-            downloadWav.onclick();
-        };
-
-    </script>
 </body>
 </html>
